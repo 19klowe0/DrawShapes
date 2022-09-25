@@ -341,6 +341,7 @@ class button():
         return False
 
 def Capture(display,name,pos,size):
+    pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
     image = pygame.Surface(size)
     image.blit(display,(0,0),(pos,size))  # Blit portion of the display to the image
     pygame.image.save(image,name)  # Save the image to the disk
