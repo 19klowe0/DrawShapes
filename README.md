@@ -3,9 +3,10 @@
 
 
 ### How to Use:
-##### Eclispe
-    Make a point on the top left-hand side you want your eclipse to start. 
-    Make a second point at the bottom right-hand side where you want the eclipse to end.
+##### Elispe
+    make a point in the center of where you want you elipse to be. 
+    make a point at the first radius length.
+    make a point at the second radius length.
 ##### Line 
     Make two points anywhere in the drawing area.
 ##### Bezier Curve 

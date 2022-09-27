@@ -17,6 +17,12 @@ WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+black = (0, 0, 0)
+white = (255, 255, 255)
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+dark_green = (21, 71, 52)
 
 pts = []
 knots = []
@@ -100,56 +106,7 @@ def DrawBezier():
 
     px = [pt1[0], pt2[0], pt3[0], pt4[0]]
     py = [pt1[1], pt2[1], pt3[1], pt4[1]]
-
-    m = [[-1, 3, -3, 1],
-         [3, -6, 3, 0],
-         [-3, 3, 0, 0],
-         [1, 0, 0, 0]]
-
-    pxm = [0, 0, 0, 0]
-    pym = [0, 0, 0, 0]
-    tm = [1, 1, 1, 1]
-
-    i = 0
-    pxm = [0, 0, 0, 0]
-    pym = [0, 0, 0, 0]
-    while i < 4:
-        j = 0
-        while j < 4:
-            pxm[i] = pxm[i] + px[j] * m[j][i]
-            pym[i] = pym[i] + py[j] * m[j][i]
-            j = j + 1
-        i = i + 1
-
-    t_begin = 0
-    t_end = 1
-    while t_begin <= t_end:
-        t = t_begin
-        i = 0
-
-        tm[3] = 1
-        k = 2
-        while k >= 0:
-            tm[k] = tm[k + 1] * t
-            k = k - 1
-
-        k = 0
-        X = 0
-        Y = 0
-        while k < 4:
-            X = X + pxm[k] * tm[k]
-            Y = Y + pym[k] * tm[k]
-            k = k + 1
-        pX = X
-        pY = (Y)
-        point(pX, pY, 3, 3, BLUE)
-
-        t_begin = t_begin + 0.005
-        pygame.display.update()
-        clock.tick(60)
-
-
-
+    return [5, px, py]
 def drawRectangle():
     print("draw Rectangle")
     pygame.draw.rect(screen, WHITE, pygame.Rect(0,0,150 ,30))
@@ -181,10 +138,7 @@ def drawRectangle():
                     count1 += 1
     pt3 = [pt1[0], pt2[1]]
     pt4 = [pt2[0], pt1[1]]
-    pygame.draw.line(screen, color, pt1, pt3, thick)
-    pygame.draw.line(screen, color, pt3, pt2, thick)
-    pygame.draw.line(screen, color, pt4, pt2, thick)
-    pygame.draw.line(screen, color, pt1, pt4, thick)
+    return [3, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1], pt4[0], pt4[1]]
 
 def drawTriangle():
     color = RED
@@ -217,11 +171,9 @@ def drawTriangle():
                         pygame.draw.rect(screen, WHITE, (pt1[0] - margin, pt1[1] - margin, 2 * margin, 2 * margin), 5)
                         pygame.draw.rect(screen, WHITE, (pt2[0] - margin, pt2[1] - margin, 2 * margin, 2 * margin), 5)
                     count1 += 1
-    pygame.draw.line(screen, color, pt1, pt2, thick)
-    pygame.draw.line(screen, color, pt2, pt3, thick)
-    pygame.draw.line(screen, color, pt1, pt3, thick)
+    return [2, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1]]
 
-def drawLine(color='GREEN', thick=3):
+def drawLine():
     print("draw Line")
     pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
 
@@ -246,7 +198,7 @@ def drawLine(color='GREEN', thick=3):
                         pygame.draw.rect(screen, WHITE, (pt1[0] - margin, pt1[1] - margin, 2 * margin, 2 * margin), 5)
                         pt2 = [x,y]
                     count1 += 1
-    pygame.draw.line(screen, color, pt1, pt2, thick)
+    return [1, pt1[0], pt1[1], pt2[0], pt2[1]]
 
 
 
@@ -277,7 +229,7 @@ def drawCircle():
                         pt2 = [x, y]
                     count1 += 1
     r = math.sqrt(((pt2[0] - pt1[0]) * (pt2[0] - pt1[0])) + (pt2[1] - pt1[1]) * (pt2[1] - pt1[1]))
-    pygame.draw.circle(screen, color, pt1, r, thick)
+    return [4, r, r, pt1[0], pt1[1]]
 
 
 def drawElipse():
@@ -291,7 +243,7 @@ def drawElipse():
     curveText = font.render("Draw a Elipse", True, BLACK)
     screen.blit(curveText, (5, 5))
     pygame.display.update()
-    while count1 < 2:
+    while count1 < 3:
         for event in pygame.event.get():
             x, y = pygame.mouse.get_pos()
             pt = [x, y]
@@ -303,14 +255,19 @@ def drawElipse():
                         pygame.display.update()
                     if count1 == 1:
                         pt2 = [x, y]
+                        pygame.draw.rect(screen, BLUE, (pt2[0] - margin, pt2[1] - margin, 2 * margin, 2 * margin), 5)
+                        pygame.display.update()
+                    if count1 == 2:
+                        pt3 = [x, y]
                         pygame.draw.rect(screen, WHITE, (pt1[0] - margin, pt1[1] - margin, 2 * margin, 2 * margin), 5)
+                        pygame.draw.rect(screen, WHITE, (pt2[0] - margin, pt2[1] - margin, 2 * margin, 2 * margin), 5)
                         pygame.display.update()
                     count1 += 1
-    left = pt1[0]
-    top = pt1[1]
-    width = abs(pt1[0] - pt2[0])
-    height = abs(pt1[1] - pt2[1])
-    pygame.draw.ellipse(screen, color, (left, top, width, height), thick)
+    r = math.sqrt(((pt2[0] - pt1[0]) * (pt2[0] - pt1[0])) + (pt2[1] - pt1[1]) * (pt2[1] - pt1[1]))
+    r1 = math.sqrt(((pt3[0] - pt1[0]) * (pt3[0] - pt1[0])) + (pt3[1] - pt1[1]) * (pt3[1] - pt1[1]))
+    return [4, r, r1, pt1[0], pt1[1]]
+
+
 
 
 #Button Class
@@ -365,73 +322,262 @@ captureButton = button((255,0,255),650,600,120,70,"Save")
 
 
 buttonCheck = -1
-while not done:
-    eclipseButton.draw(screen, (0, 0, 0))
-    lineButton.draw(screen, (0, 0, 0))
-    bezierButton.draw(screen, (0, 0, 0))
-    triangleButton.draw(screen, (0, 0, 0))
-    circleButton.draw(screen, (0, 0, 0))
-    rectangleButton.draw(screen, (0, 0, 0))
-    captureButton.draw(screen, (0, 0, 0))
-
-    time_passed = clock.tick(30)
-
-    for event in pygame.event.get():
-        pos = pygame.mouse.get_pos()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pressed = -1
-            if lineButton.isOver(pos):
-                buttonCheck = 1
-                drawLine()
-            elif bezierButton.isOver(pos):
-                buttonCheck = 2
-                DrawBezier()
-            elif triangleButton.isOver(pos):
-                buttonCheck = 3
-                drawTriangle()
-            elif circleButton.isOver(pos):
-                buttonCheck = 4
-                drawCircle()
-            elif rectangleButton.isOver(pos):
-                buttonCheck = 5
-                drawRectangle()
-            elif eclipseButton.isOver(pos):
-                buttonCheck = 6
-                drawElipse()
-            elif captureButton.isOver(pos):
-                buttonCheck = 7
-                Capture(screen, "ArtWork.png", (0,0), (600, 700))
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            pressed = 1
-        elif event.type == pygame.QUIT:
-            done = True
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                zoom += 0.2
-                print('ZOOMING IN')
-            if event.key == pygame.K_DOWN:
-                zoom -= 0.2
-                print('ZOOMING OUT')
-            if event.key == pygame.K_0:
-                zoom = 2
-                print('RESET')
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_UP:
-                zoom += 0
-                print('ZOOMING IN')
-            if event.key == pygame.K_DOWN:
-                zoom -= 0
-                print('ZOOMING OUT')
-            if event.key == pygame.K_0:
-                zoom = 2
-                print('RESET')
-        else:
-            pressed = 0
 
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
-    pygame.display.update()
-    old_pressed == pressed
+
+def game_loop():
+    gameExit = False
+    print("Inside game_loop")
+    scale = 1
+    scale_change = 0
+    pX_change = 0
+    pX_direction = 0
+    pY_change = 0
+    pY_direction = 0
+    arrayForPoints = []
+
+    m = [[-1, 3, -3, 1],
+         [3, -6, 3, 0],
+         [-3, 3, 0, 0],
+         [1, 0, 0, 0]]
+
+    pxm = [0, 0, 0, 0]
+    pym = [0, 0, 0, 0]
+    tm = [1, 1, 1, 1]
+
+
+
+    pressed = 0
+    margin = 6
+    old_pressed = 0
+    old_button1 = 0
+    old_button3 = 0
+
+    selectedPoint = -1
+    eclipseButton = button((255, 165, 165), 650, 10, 120, 70, "Eclipse")
+    lineButton = button((255, 165, 0), 650, 100, 120, 70, "Line")
+    bezierButton = button((0, 255, 0), 650, 200, 120, 70, "Bezier")
+    triangleButton = button((255, 255, 0), 650, 300, 120, 70, "Triangle")
+    circleButton = button((255, 255, 255), 650, 400, 120, 70, "Circle")
+    rectangleButton = button((255, 0, 255), 650, 500, 120, 70, "Rectangle")
+    captureButton = button((255, 0, 255), 650, 600, 120, 70, "Save")
+
+    while not gameExit:
+        eclipseButton.draw(screen, (0, 0, 0))
+        lineButton.draw(screen, (0, 0, 0))
+        bezierButton.draw(screen, (0, 0, 0))
+        triangleButton.draw(screen, (0, 0, 0))
+        circleButton.draw(screen, (0, 0, 0))
+        rectangleButton.draw(screen, (0, 0, 0))
+        captureButton.draw(screen, (0, 0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                gameExit = True
+            pos = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pressed = -1
+                if lineButton.isOver(pos):
+                    buttonCheck = 1
+                    arrayForPoints.append(drawLine())
+                elif bezierButton.isOver(pos):
+                    buttonCheck = 2
+                    arrayForPoints.append(DrawBezier())
+                elif triangleButton.isOver(pos):
+                    buttonCheck = 3
+                    arrayForPoints.append(drawTriangle())
+                elif circleButton.isOver(pos):
+                    buttonCheck = 4
+                    arrayForPoints.append(drawCircle())
+                elif rectangleButton.isOver(pos):
+                    buttonCheck = 5
+                    arrayForPoints.append(drawRectangle())
+                elif eclipseButton.isOver(pos):
+                    buttonCheck = 6
+                    arrayForPoints.append(drawElipse())
+                elif captureButton.isOver(pos):
+                    buttonCheck = 7
+                    Capture(screen, "ArtWork.png", (0, 0), (600, 700))
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                pressed = 1
+            else:
+                pressed = 0
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w:
+                    scale_change = .1
+                elif event.key == pygame.K_s:
+                    scale_change = -.1
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_w or event.key == pygame.K_s:
+                    scale_change = 0
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    pX_direction = -2
+                elif event.key == pygame.K_RIGHT:
+                    pX_direction = 2
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    pY_direction = -2
+                elif event.key == pygame.K_DOWN:
+                    pY_direction = 2
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    pX_direction = 0
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    pY_direction = 0
+
+        pX_change = pX_change + pX_direction
+        pY_change = pY_change + pY_direction
+
+        screen.fill(white)
+
+        eclipseButton.draw(screen, (0, 0, 0))
+        lineButton.draw(screen, (0, 0, 0))
+        bezierButton.draw(screen, (0, 0, 0))
+        triangleButton.draw(screen, (0, 0, 0))
+        circleButton.draw(screen, (0, 0, 0))
+        rectangleButton.draw(screen, (0, 0, 0))
+        captureButton.draw(screen, (0, 0, 0))
+
+        if scale + scale_change > 1:
+            scale = scale + scale_change
+        r = int(800 / scale)
+
+        i = 0
+        pxm = [0, 0, 0, 0]
+        pym = [0, 0, 0, 0]
+        pxms = []
+        pyms = []
+
+        for c in arrayForPoints:
+            if c[0] == 5:
+                while i < 4:
+                    j = 0
+                    while j < 4:
+                        print(c[1][j])
+                        pxm[i] = pxm[i] + c[1][j] * m[j][i]
+                        pym[i] = pym[i] + c[2][j] * m[j][i]
+                        j = j + 1
+                    i = i + 1
+                pxms.append(pxm)
+                pyms.append(pym)
+
+        print(pxms)
+        t_begin = 0
+        t_end = 2 * math.pi * scale
+        sT_begin = t_begin * scale
+        sT_end = t_end * scale
+        sT = sT_begin
+        while sT <= sT_end:
+            #line segments = 1, triangles = 2, rectangles = 3, ellipse = 6 circles= 4, and Bezier curves = 5.
+            for a in arrayForPoints:
+                if (a[0] == 2):
+                    if sT <= 1:
+                        t = sT
+                        xQ0 = (1 - t) * a[1] + t * a[3]
+                        yQ0 = (1 - t) * a[2] + t * a[4]
+                        pX = (xQ0 * scale) + pX_change
+                        pY = (yQ0 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+
+                        xQ1 = (1 - t) * a[3] + t * a[5]
+                        yQ1 = (1 - t) * a[4] + t * a[6]
+                        pX = (xQ1 * scale) + pX_change
+                        pY = (yQ1 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+
+                        xQ2 = (1 - t) * a[5] + t * a[1]
+                        yQ2 = (1 - t) * a[6] + t * a[2]
+                        pX = (xQ2 * scale) + pX_change
+                        pY = (yQ2 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+                if (a[0]== 1):
+                    if sT <= 1:
+                        t = sT
+                        xQ0 = (1 - t) * a[1] + t * a[3]
+                        yQ0 = (1 - t) * a[2] + t * a[4]
+                        pX = (xQ0 * scale) + pX_change
+                        pY = (yQ0 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+                if (a[0] == 3):
+                    if sT <= 1:
+                        t = sT
+                        xQ0 = (1 - t) * a[1] + t * a[5]
+                        yQ0 = (1 - t) * a[2] + t * a[6]
+                        pX = (xQ0 * scale) + pX_change
+                        pY = (yQ0 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+
+                        xQ1 = (1 - t) * a[3] + t * a[5]
+                        yQ1 = (1 - t) * a[4] + t * a[6]
+                        pX = (xQ1 * scale) + pX_change
+                        pY = (yQ1 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+
+                        xQ2 = (1 - t) * a[1] + t * a[7]
+                        yQ2 = (1 - t) * a[2] + t * a[8]
+                        pX = (xQ2 * scale) + pX_change
+                        pY = (yQ2 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+
+                        xQ2 = (1 - t) * a[3] + t * a[7]
+                        yQ2 = (1 - t) * a[4] + t * a[8]
+                        pX = (xQ2 * scale) + pX_change
+                        pY = (yQ2 * scale) + pY_change
+                        point(pX, pY, 3, 3, green)
+                if(a[0] == 4 or a[0] == 6):
+                    t = sT / scale
+                    x = a[1] * math.cos(t)* scale
+                    y = a[2] * math.sin(t)* scale
+                    pX = x + a[3] + pX_change
+                    pY = (y) + a[4] + pY_change
+                    point(pX, pY, 3, 3, black)
+                if(a[0] == 5):
+                    if sT <= 1:
+                        t = sT
+                        i = 0
+                        while i < 3:
+                            X = (1 - t) * a[1][i] + t * a[1][i + 1]
+                            Y = (1 - t) * a[2][i] + t * a[2][i + 1]
+                            pX = X * scale + pX_change
+                            pY = (Y * scale) + pY_change
+                            point(pX, pY, 3, 3, green)
+                            i = i + 1
+                        i = 0
+                        while i < len(pxms):
+                            X = 0
+                            Y = 0
+                            tm[3] = 1
+                            k = 2
+                            while k >= 0:
+                                tm[k] = tm[k + 1] * t
+                                k = k - 1
+
+                            k = 0
+                            while k < 4:
+                                X = X + pxms[i][k] * tm[k]
+                                Y = Y + pyms[i][k] * tm[k]
+                                k = k + 1
+                            pX = X * scale + pX_change
+                            pY = Y * scale + pY_change
+                            point(pX, pY, 3, 3, red)
+                            i= i+1
+
+            sT = sT + 0.005
+
+        pygame.display.update()
+        old_pressed == pressed
+        clock.tick(60)
+
+
+game_loop()
+print("Program ended")
 
 pygame.quit()
