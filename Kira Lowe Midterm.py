@@ -7,9 +7,16 @@ height = 700
 pygame.init()
 
 screen = pygame.display.set_mode((width, height), 0, 32)
-pygame.display.set_caption("Draw Some Shapes")
-zoom = 1
-screen1 = pygame.display.set_mode((int(width / zoom), int(height / zoom)), 0, 32)
+pygame.display.set_caption("Trace a Picture!")
+#read in pictures
+elipse_image = pygame.image.load('elipse_image.png')
+triangle_image = pygame.image.load('triangle_image.png')
+rectangle_image = pygame.image.load('rectangle_image.png')
+save_image = pygame.image.load('save_image.png')
+bezier_image = pygame.image.load('bezier_image.png')
+circle_image = pygame.image.load('circle_image.png')
+line_image = pygame.image.load('line_image.png')
+
 
 # Define the colors we will use in RGB format
 BLACK = (0, 0, 0)
@@ -272,7 +279,7 @@ def drawElipse():
 
 #Button Class
 class button():
-    def __init__(self, color, x, y, width, height, text=''):
+    def __init__(self, color, x, y, width, height, text):
         self.color = color
         self.x = x
         self.y = y
@@ -287,15 +294,92 @@ class button():
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height), 0)
 
         if self.text != '':
-            font = pygame.font.SysFont('comicsans', 20)
-            text = font.render(self.text, 1, (0, 0, 0))
-            win.blit(text, ( self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
+            #font = pygame.font.SysFont('comicsans', 20)
+            #text = font.render(self.text, 1, (0, 0, 0))
+            #win.blit(text, (self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
+
+            win.blit(self.text, (self.x + (self.width / 2 - self.text.get_width() / 2), self.y + (self.height / 2 - self.text.get_height() / 2)))
+
+
+
 
     def isOver(self, pos):
         if pos[0] > self.x and pos[0] < self.x + self.width:
             if pos[1] > self.y and pos[1] < self.y + self.height:
                 return True
         return False
+
+
+# Takes rectangle's size, position and a point. Returns true if that
+# point is inside the rectangle and false if it isnt.
+def pointInRectanlge(px, py, rw, rh, rx, ry):
+    if px > rx and px < rx + rw:
+        if py > ry and py < ry + rh:
+            return True
+    return False
+
+
+# Blueprint to make sliders in the game
+class Slider:
+    def __init__(self, position, upperValue: int = 255, sliderWidth: int = 0,
+                 text: str = "", outlineSize: tuple = (150, 10))-> None:
+        self.position = position
+        self.outlineSize = outlineSize
+        self.text = text
+        self.sliderWidth = sliderWidth
+        self.upperValue = upperValue
+
+    # returns the current value of the slider
+    def getValue(self) -> float:
+        return self.sliderWidth / (self.outlineSize[0] / self.upperValue)
+
+    # renders slider and the text showing the value of the slider
+    def render(self, display: pygame.display) -> None:
+        # draw outline and slider rectangles
+        pygame.draw.rect(display, (0,0,0), (self.position[0], self.position[1], self.outlineSize[0], self.outlineSize[1]), 3)
+
+        pygame.draw.rect(display, (0,0,0), (self.position[0], self.position[1], self.sliderWidth, self.outlineSize[1]))
+
+        # determine size of font
+        self.font = pygame.font.Font(pygame.font.get_default_font(), int((1.5) * self.outlineSize[1]))
+
+        # create text surface with value
+        if (self.position == (650, 150)):
+            valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (self.getValue(), 0, 0))
+        elif (self.position == (650, 190)):
+            valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (0, self.getValue(), 0))
+        elif (self.position == (650, 230)):
+            valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (0, 0, self.getValue()))
+
+        # centre text
+        textx = self.position[0] + (self.outlineSize[0] / 2) - (valueSurf.get_rect().width / 2)
+        texty = self.position[1] + (self.outlineSize[1] / 2) - (valueSurf.get_rect().height / 2 -15)
+
+        display.blit(valueSurf, (textx, texty))
+
+    # allows users to change value of the slider by dragging it.
+    def changeValue(self) -> None:
+        # If mouse is pressed and mouse is inside the slider
+        mousePos = pygame.mouse.get_pos()
+        if pointInRectanlge(mousePos[0], mousePos[1]
+                , self.outlineSize[0], self.outlineSize[1], self.position[0], self.position[1]):
+            if pygame.mouse.get_pressed()[0]:
+                # the size of the slider
+                self.sliderWidth = mousePos[0] - self.position[0]
+
+                # limit the size of the slider
+                if self.sliderWidth < 1:
+                    self.sliderWidth = 0
+                if self.sliderWidth > self.outlineSize[0]:
+                    self.sliderWidth = self.outlineSize[0]
+
+
+slider = Slider((650, 150))
+slider_1 = Slider((650, 190))
+slider_2 = Slider((650, 230))
+
+
+
 
 def Capture(display,name,pos,size):
     pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
@@ -312,7 +396,7 @@ old_button1 = 0
 old_button3 = 0
 
 selectedPoint = -1
-eclipseButton = button((255,165,165),650,10,120,70,"Eclipse")
+eclipseButton = button((255,165,165),650,10,20,10,"Elipse") #def __init__(self, color, x, y, width, height, text=''):
 lineButton = button((255,165,0),650,100,120,70,"Line")
 bezierButton = button((0,255,0),650,200,120,70,"Bezier")
 triangleButton = button((255,255,0),650,300,120,70,"Triangle")
@@ -355,13 +439,16 @@ def game_loop():
     old_button3 = 0
 
     selectedPoint = -1
-    eclipseButton = button((255, 165, 165), 650, 10, 120, 70, "Eclipse")
-    lineButton = button((255, 165, 0), 650, 100, 120, 70, "Line")
-    bezierButton = button((0, 255, 0), 650, 200, 120, 70, "Bezier")
-    triangleButton = button((255, 255, 0), 650, 300, 120, 70, "Triangle")
-    circleButton = button((255, 255, 255), 650, 400, 120, 70, "Circle")
-    rectangleButton = button((255, 0, 255), 650, 500, 120, 70, "Rectangle")
-    captureButton = button((255, 0, 255), 650, 600, 120, 70, "Save")
+    #first line
+    eclipseButton = button((255, 165, 165), 690, 10, 30, 30, elipse_image)
+    circleButton = button((160, 150, 255), 722, 10, 30, 30, circle_image)
+    triangleButton = button((255, 255, 0), 754, 10, 30, 30, triangle_image)
+    #second
+    lineButton = button((255, 165, 0), 690, 42, 30, 30, line_image)
+    bezierButton = button((0, 255, 0), 722, 42, 30, 30, bezier_image)
+    rectangleButton = button((255, 0, 255), 754, 42, 30, 30, rectangle_image)
+    #third
+    captureButton = button((255, 0, 0), 690, 74, 30, 30, save_image)
 
     while not gameExit:
         eclipseButton.draw(screen, (0, 0, 0))
@@ -371,6 +458,7 @@ def game_loop():
         circleButton.draw(screen, (0, 0, 0))
         rectangleButton.draw(screen, (0, 0, 0))
         captureButton.draw(screen, (0, 0, 0))
+        pygame
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -435,7 +523,6 @@ def game_loop():
 
         pX_change = pX_change + pX_direction
         pY_change = pY_change + pY_direction
-
         screen.fill(white)
 
         eclipseButton.draw(screen, (0, 0, 0))
@@ -468,8 +555,6 @@ def game_loop():
                     i = i + 1
                 pxms.append(pxm)
                 pyms.append(pym)
-
-        print(pxms)
         t_begin = 0
         t_end = 2 * math.pi * scale
         sT_begin = t_begin * scale
@@ -543,14 +628,6 @@ def game_loop():
                     if sT <= 1:
                         t = sT
                         i = 0
-                        while i < 3:
-                            X = (1 - t) * a[1][i] + t * a[1][i + 1]
-                            Y = (1 - t) * a[2][i] + t * a[2][i + 1]
-                            pX = X * scale + pX_change
-                            pY = (Y * scale) + pY_change
-                            point(pX, pY, 3, 3, green)
-                            i = i + 1
-                        i = 0
                         while i < len(pxms):
                             X = 0
                             Y = 0
@@ -572,7 +649,17 @@ def game_loop():
 
             sT = sT + 0.005
 
+        pygame.event.get()
+
+        slider.render(screen)
+        slider.changeValue()
+        slider_1.render(screen)
+        slider_1.changeValue()
+        slider_2.render(screen)
+        slider_2.changeValue()
+
         pygame.display.update()
+
         old_pressed == pressed
         clock.tick(60)
 

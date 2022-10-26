@@ -5,8 +5,8 @@
 ### How to Use:
 ##### Elispe
     make a point in the center of where you want you elipse to be. 
-    make a point at the first radius length.
-    make a point at the second radius length.
+    make a point at the first radius length (width).
+    make a point at the second radius length (height).
 ##### Line 
     Make two points anywhere in the drawing area.
 ##### Bezier Curve 
