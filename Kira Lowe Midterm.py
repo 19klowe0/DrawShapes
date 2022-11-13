@@ -1,6 +1,9 @@
 import pygame
 from sys import exit
 import math
+import subprocess
+import os
+import sys
 
 width = 800
 height = 700
@@ -16,7 +19,9 @@ save_image = pygame.image.load('save_image.png')
 bezier_image = pygame.image.load('bezier_image.png')
 circle_image = pygame.image.load('circle_image.png')
 line_image = pygame.image.load('line_image.png')
-
+FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+image = pygame.image.load('bezier_image.png')
+path = "C:"
 
 # Define the colors we will use in RGB format
 BLACK = (0, 0, 0)
@@ -30,6 +35,8 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 dark_green = (21, 71, 52)
+
+current_color = (0, 0, 0)
 
 pts = []
 knots = []
@@ -54,6 +61,7 @@ def clearAndRedraw():
     triangleButton.draw(screen, (0, 0, 0))
     circleButton.draw(screen, (0, 0, 0))
     rectangleButton.draw(screen, (0, 0, 0))
+    insertButton(screen, (0,0,0))
 
     #Text
     if buttonCheck == 1:
@@ -75,7 +83,7 @@ def clearAndRedraw():
 def point(pX, pY, pWidth, pHeight, pColor):
     pygame.draw.rect(screen, pColor, [pX, pY, pWidth, pHeight])
 
-def DrawBezier():
+def DrawBezier(currentColor):
     print("draw bezier")
     color = RED
     thick = 3
@@ -113,8 +121,8 @@ def DrawBezier():
 
     px = [pt1[0], pt2[0], pt3[0], pt4[0]]
     py = [pt1[1], pt2[1], pt3[1], pt4[1]]
-    return [5, px, py]
-def drawRectangle():
+    return [5, px, py, currentColor]
+def drawRectangle(currentColor):
     print("draw Rectangle")
     pygame.draw.rect(screen, WHITE, pygame.Rect(0,0,150 ,30))
 
@@ -145,9 +153,9 @@ def drawRectangle():
                     count1 += 1
     pt3 = [pt1[0], pt2[1]]
     pt4 = [pt2[0], pt1[1]]
-    return [3, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1], pt4[0], pt4[1]]
+    return [3, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1], pt4[0], pt4[1], currentColor]
 
-def drawTriangle():
+def drawTriangle(currentColor):
     color = RED
     thick = 3
     print("draw Triangle")
@@ -178,9 +186,9 @@ def drawTriangle():
                         pygame.draw.rect(screen, WHITE, (pt1[0] - margin, pt1[1] - margin, 2 * margin, 2 * margin), 5)
                         pygame.draw.rect(screen, WHITE, (pt2[0] - margin, pt2[1] - margin, 2 * margin, 2 * margin), 5)
                     count1 += 1
-    return [2, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1]]
+    return [2, pt1[0], pt1[1], pt2[0], pt2[1], pt3[0], pt3[1], currentColor]
 
-def drawLine():
+def drawLine(currentColor):
     print("draw Line")
     pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
 
@@ -205,11 +213,11 @@ def drawLine():
                         pygame.draw.rect(screen, WHITE, (pt1[0] - margin, pt1[1] - margin, 2 * margin, 2 * margin), 5)
                         pt2 = [x,y]
                     count1 += 1
-    return [1, pt1[0], pt1[1], pt2[0], pt2[1]]
+    return [1, pt1[0], pt1[1], pt2[0], pt2[1], currentColor]
 
 
 
-def drawCircle():
+def drawCircle(currentColor):
     print("draw Circle")
     color = BLACK
     thick = 3
@@ -236,10 +244,10 @@ def drawCircle():
                         pt2 = [x, y]
                     count1 += 1
     r = math.sqrt(((pt2[0] - pt1[0]) * (pt2[0] - pt1[0])) + (pt2[1] - pt1[1]) * (pt2[1] - pt1[1]))
-    return [4, r, r, pt1[0], pt1[1]]
+    return [4, r, r, pt1[0], pt1[1], currentColor]
 
 
-def drawElipse():
+def drawElipse(currentColor):
     print("draw Elipse")
     color = BLACK
     thick = 3
@@ -272,12 +280,19 @@ def drawElipse():
                     count1 += 1
     r = math.sqrt(((pt2[0] - pt1[0]) * (pt2[0] - pt1[0])) + (pt2[1] - pt1[1]) * (pt2[1] - pt1[1]))
     r1 = math.sqrt(((pt3[0] - pt1[0]) * (pt3[0] - pt1[0])) + (pt3[1] - pt1[1]) * (pt3[1] - pt1[1]))
-    return [4, r, r1, pt1[0], pt1[1]]
+    return [4, r, r1, pt1[0], pt1[1], currentColor]
+
+def insertLayer():
+    #opens the file explorer
+    print("insert")
+    subprocess.Popen('explorer')
+
+def insertPicture(path):
+    #adds the picture to the canvas
+    added_image = pygame.image.load(path)
+    return added_image
 
 
-
-
-#Button Class
 class button():
     def __init__(self, color, x, y, width, height, text):
         self.color = color
@@ -294,11 +309,12 @@ class button():
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height), 0)
 
         if self.text != '':
-            #font = pygame.font.SysFont('comicsans', 20)
-            #text = font.render(self.text, 1, (0, 0, 0))
-            #win.blit(text, (self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
-
-            win.blit(self.text, (self.x + (self.width / 2 - self.text.get_width() / 2), self.y + (self.height / 2 - self.text.get_height() / 2)))
+            if (self.text == "Insert"):
+                font = pygame.font.SysFont('comicsans', 20)
+                text = font.render(self.text, 1, (0, 0, 0))
+                win.blit(text, (self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
+            else:
+                win.blit(self.text, (self.x + (self.width / 2 - self.text.get_width() / 2), self.y + (self.height / 2 - self.text.get_height() / 2)))
 
 
 
@@ -350,6 +366,8 @@ class Slider:
             valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (0, self.getValue(), 0))
         elif (self.position == (650, 230)):
             valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (0, 0, self.getValue()))
+        else:
+            valueSurf = self.font.render(f"{self.text}: {round(self.getValue())}", True, (0, 0, self.getValue()))
 
         # centre text
         textx = self.position[0] + (self.outlineSize[0] / 2) - (valueSurf.get_rect().width / 2)
@@ -361,8 +379,7 @@ class Slider:
     def changeValue(self) -> None:
         # If mouse is pressed and mouse is inside the slider
         mousePos = pygame.mouse.get_pos()
-        if pointInRectanlge(mousePos[0], mousePos[1]
-                , self.outlineSize[0], self.outlineSize[1], self.position[0], self.position[1]):
+        if pointInRectanlge(mousePos[0], mousePos[1], self.outlineSize[0], self.outlineSize[1], self.position[0], self.position[1]):
             if pygame.mouse.get_pressed()[0]:
                 # the size of the slider
                 self.sliderWidth = mousePos[0] - self.position[0]
@@ -377,8 +394,57 @@ class Slider:
 slider = Slider((650, 150))
 slider_1 = Slider((650, 190))
 slider_2 = Slider((650, 230))
+slider_Width = Slider((450, 10))
+
+def insertFreeLine(currentColor):
+    print("inserting free line")
+
+    pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
+
+    font = pygame.font.Font("freesansbold.ttf", 15)
+    curveText = font.render("Draw a Free Line", True, BLACK)
+    screen.blit(curveText, (5, 5))
+
+    freeLineCloseButton.draw(screen, (0, 0, 0))
+
+    slider_Width.changeValue()
+    slider_Width.render(screen)
+
+    pygame.display.update()
+
+    global drawing, last_pos, w
+    lineArray = []
+    count = 0
+    while count < 1:
+        for event in pygame.event.get():
+            slider_Width.changeValue()
+            pygame.draw.rect(screen, WHITE, pygame.Rect(450, 10, 150, 30))
+            w = int(slider_Width.getValue())
+            if w == 0:
+                w = 1
+            slider_Width.render(screen)
+            mouse_position = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEMOTION:
+                if (drawing):
+                    mouse_position = pygame.mouse.get_pos()
+                    if last_pos is not None:
+                        pygame.draw.line(screen, current_color, last_pos, mouse_position, w)
+                        pygame.display.update()
+                        lineArray.append((last_pos, mouse_position, w))
+                    last_pos = mouse_position
+            elif event.type == pygame.MOUSEBUTTONUP:
+                mouse_position = (0, 0)
+                drawing = False
+                last_pos = None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if freeLineCloseButton.isOver(mouse_position):
+                    return [9, lineArray, currentColor]
+                else:
+                    drawing = True
 
 
+
+    #Button Class
 
 
 def Capture(display,name,pos,size):
@@ -403,12 +469,17 @@ triangleButton = button((255,255,0),650,300,120,70,"Triangle")
 circleButton = button((255,255,255),650,400,120,70,"Circle")
 rectangleButton = button((255,0,255),650,500,120,70,"Rectangle")
 captureButton = button((255,0,255),650,600,120,70,"Save")
+insertButton = button((255,0,255),650, 600,120,70, "Insert")
+freeLineButton = button((255,165,165),650,10,20,10,"freeline")
+freeLineCloseButton = button((0, 255, 0), 658, 74, 30, 30, bezier_image)
 
 
 buttonCheck = -1
 
-    # Go ahead and update the screen with what we've drawn.
-    # This MUST happen after all the other drawing commands.
+drawing = False
+last_pos = None
+w = 1
+
 
 def game_loop():
     gameExit = False
@@ -420,6 +491,8 @@ def game_loop():
     pY_change = 0
     pY_direction = 0
     arrayForPoints = []
+    current_color = (0, 0, 0)
+
 
     m = [[-1, 3, -3, 1],
          [3, -6, 3, 0],
@@ -429,7 +502,6 @@ def game_loop():
     pxm = [0, 0, 0, 0]
     pym = [0, 0, 0, 0]
     tm = [1, 1, 1, 1]
-
 
 
     pressed = 0
@@ -443,12 +515,18 @@ def game_loop():
     eclipseButton = button((255, 165, 165), 690, 10, 30, 30, elipse_image)
     circleButton = button((160, 150, 255), 722, 10, 30, 30, circle_image)
     triangleButton = button((255, 255, 0), 754, 10, 30, 30, triangle_image)
+    captureButton = button((255, 0, 0), 658, 10, 30, 30, save_image)
     #second
     lineButton = button((255, 165, 0), 690, 42, 30, 30, line_image)
     bezierButton = button((0, 255, 0), 722, 42, 30, 30, bezier_image)
     rectangleButton = button((255, 0, 255), 754, 42, 30, 30, rectangle_image)
-    #third
-    captureButton = button((255, 0, 0), 690, 74, 30, 30, save_image)
+    freeLineButton = button((0, 255, 0), 658, 42, 30, 30, bezier_image)
+    freeLineCloseButton = button((0, 255, 0), 658, 54, 30, 30, bezier_image)
+
+
+    insertButton = button((190,53,109), 675, 270, 100, 30, "Insert")
+    image = pygame.image.load('Insert.png')
+
 
     while not gameExit:
         eclipseButton.draw(screen, (0, 0, 0))
@@ -458,7 +536,9 @@ def game_loop():
         circleButton.draw(screen, (0, 0, 0))
         rectangleButton.draw(screen, (0, 0, 0))
         captureButton.draw(screen, (0, 0, 0))
-        pygame
+        insertButton.draw(screen, (0, 0, 0))
+        freeLineButton.draw(screen, (0, 0, 0))
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -468,25 +548,31 @@ def game_loop():
                 pressed = -1
                 if lineButton.isOver(pos):
                     buttonCheck = 1
-                    arrayForPoints.append(drawLine())
+                    arrayForPoints.append(drawLine(current_color))
                 elif bezierButton.isOver(pos):
                     buttonCheck = 2
-                    arrayForPoints.append(DrawBezier())
+                    arrayForPoints.append(DrawBezier(current_color))
                 elif triangleButton.isOver(pos):
                     buttonCheck = 3
-                    arrayForPoints.append(drawTriangle())
+                    arrayForPoints.append(drawTriangle(current_color))
                 elif circleButton.isOver(pos):
                     buttonCheck = 4
-                    arrayForPoints.append(drawCircle())
+                    arrayForPoints.append(drawCircle(current_color))
                 elif rectangleButton.isOver(pos):
                     buttonCheck = 5
-                    arrayForPoints.append(drawRectangle())
+                    arrayForPoints.append(drawRectangle(current_color))
                 elif eclipseButton.isOver(pos):
                     buttonCheck = 6
-                    arrayForPoints.append(drawElipse())
+                    arrayForPoints.append(drawElipse(current_color))
+                elif freeLineButton.isOver(pos):
+                    buttonCheck = 9
+                    arrayForPoints.append(insertFreeLine(current_color))
                 elif captureButton.isOver(pos):
                     buttonCheck = 7
                     Capture(screen, "ArtWork.png", (0, 0), (600, 700))
+                elif insertButton.isOver(pos):
+                    buttonCheck = 8
+                    insertLayer()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 pressed = 1
@@ -520,11 +606,18 @@ def game_loop():
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     pY_direction = 0
+            if event.type == pygame.DROPFILE:
+                file_extension = os.path.splitext(event.file)[1]
+                if file_extension in [".bmp", ".jpg", ".png", ".PNG"]:
+                    image = pygame.image.load(event.file)  # load the image given the file name.
+                    print(event.file)
+
 
         pX_change = pX_change + pX_direction
         pY_change = pY_change + pY_direction
         screen.fill(white)
 
+        screen.blit(image, (50, 50))
         eclipseButton.draw(screen, (0, 0, 0))
         lineButton.draw(screen, (0, 0, 0))
         bezierButton.draw(screen, (0, 0, 0))
@@ -532,6 +625,8 @@ def game_loop():
         circleButton.draw(screen, (0, 0, 0))
         rectangleButton.draw(screen, (0, 0, 0))
         captureButton.draw(screen, (0, 0, 0))
+        insertButton.draw(screen, (0,0,0))
+        freeLineButton.draw(screen, (0, 0, 0))
 
         if scale + scale_change > 1:
             scale = scale + scale_change
@@ -570,19 +665,19 @@ def game_loop():
                         yQ0 = (1 - t) * a[2] + t * a[4]
                         pX = (xQ0 * scale) + pX_change
                         pY = (yQ0 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
 
                         xQ1 = (1 - t) * a[3] + t * a[5]
                         yQ1 = (1 - t) * a[4] + t * a[6]
                         pX = (xQ1 * scale) + pX_change
                         pY = (yQ1 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
 
                         xQ2 = (1 - t) * a[5] + t * a[1]
                         yQ2 = (1 - t) * a[6] + t * a[2]
                         pX = (xQ2 * scale) + pX_change
                         pY = (yQ2 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
                 if (a[0]== 1):
                     if sT <= 1:
                         t = sT
@@ -590,7 +685,8 @@ def game_loop():
                         yQ0 = (1 - t) * a[2] + t * a[4]
                         pX = (xQ0 * scale) + pX_change
                         pY = (yQ0 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
+
                 if (a[0] == 3):
                     if sT <= 1:
                         t = sT
@@ -598,32 +694,32 @@ def game_loop():
                         yQ0 = (1 - t) * a[2] + t * a[6]
                         pX = (xQ0 * scale) + pX_change
                         pY = (yQ0 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
 
                         xQ1 = (1 - t) * a[3] + t * a[5]
                         yQ1 = (1 - t) * a[4] + t * a[6]
                         pX = (xQ1 * scale) + pX_change
                         pY = (yQ1 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
 
                         xQ2 = (1 - t) * a[1] + t * a[7]
                         yQ2 = (1 - t) * a[2] + t * a[8]
                         pX = (xQ2 * scale) + pX_change
                         pY = (yQ2 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
 
                         xQ2 = (1 - t) * a[3] + t * a[7]
                         yQ2 = (1 - t) * a[4] + t * a[8]
                         pX = (xQ2 * scale) + pX_change
                         pY = (yQ2 * scale) + pY_change
-                        point(pX, pY, 3, 3, green)
+                        point(pX, pY, 3, 3, a[len(a)-1])
                 if(a[0] == 4 or a[0] == 6):
                     t = sT / scale
                     x = a[1] * math.cos(t)* scale
                     y = a[2] * math.sin(t)* scale
                     pX = x + a[3] + pX_change
                     pY = (y) + a[4] + pY_change
-                    point(pX, pY, 3, 3, black)
+                    point(pX, pY, 3, 3, a[len(a)-1])
                 if(a[0] == 5):
                     if sT <= 1:
                         t = sT
@@ -644,10 +740,15 @@ def game_loop():
                                 k = k + 1
                             pX = X * scale + pX_change
                             pY = Y * scale + pY_change
-                            point(pX, pY, 3, 3, red)
+                            point(pX, pY, 3, 3, a[len(a)-1])
                             i= i+1
 
             sT = sT + 0.005
+
+        for a in arrayForPoints:
+            if (a[0] == 9):
+                for u in a[1]:
+                    pygame.draw.line(screen, a[2], u[0], u[1], u[2])
 
         pygame.event.get()
 
@@ -657,6 +758,10 @@ def game_loop():
         slider_1.changeValue()
         slider_2.render(screen)
         slider_2.changeValue()
+
+        current_color = (slider.getValue(), slider_1.getValue(), slider_2.getValue())
+
+        pygame.draw.rect(screen,current_color, pygame.Rect(700, 90, 50, 50))
 
         pygame.display.update()
 
