@@ -1,13 +1,20 @@
+import time
+
 import pygame
 from sys import exit
 import math
 import subprocess
 import os
+import pyautogui
+from pyautogui import *
 import sys
+from SaveLoadManager import SaveLoadSystem
 
 width = 800
 height = 700
 pygame.init()
+
+
 
 screen = pygame.display.set_mode((width, height), 0, 32)
 pygame.display.set_caption("Trace a Picture!")
@@ -19,9 +26,16 @@ save_image = pygame.image.load('save_image.png')
 bezier_image = pygame.image.load('bezier_image.png')
 circle_image = pygame.image.load('circle_image.png')
 line_image = pygame.image.load('line_image.png')
+off_image = pygame.image.load('offImage.png')
+close_image = pygame.image.load('closeImage.png')
+freedraw_image = pygame.image.load('freedraw_image.png')
+dropper_image = pygame.image.load('dropper_image.png')
+undo_image = pygame.image.load('undo_image.png')
+load_image = pygame.image.load('load_image.png')
 FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
 image = pygame.image.load('bezier_image.png')
 path = "C:"
+saveloadmanager = SaveLoadSystem(".save", "save_data")
 
 # Define the colors we will use in RGB format
 BLACK = (0, 0, 0)
@@ -348,6 +362,11 @@ class Slider:
     # returns the current value of the slider
     def getValue(self) -> float:
         return self.sliderWidth / (self.outlineSize[0] / self.upperValue)
+    def setValue(self, color):
+        # If mouse is pressed and mouse is inside the slider
+        self.sliderWidth = color*.58;
+
+
 
     # renders slider and the text showing the value of the slider
     def render(self, display: pygame.display) -> None:
@@ -421,14 +440,15 @@ def insertFreeLine(currentColor):
             pygame.draw.rect(screen, WHITE, pygame.Rect(450, 10, 150, 30))
             w = int(slider_Width.getValue())
             if w == 0:
-                w = 1
+                w = 5
+
             slider_Width.render(screen)
             mouse_position = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEMOTION:
                 if (drawing):
                     mouse_position = pygame.mouse.get_pos()
                     if last_pos is not None:
-                        pygame.draw.line(screen, current_color, last_pos, mouse_position, w)
+                        pygame.draw.line(screen, currentColor, last_pos, mouse_position, w)
                         pygame.display.update()
                         lineArray.append((last_pos, mouse_position, w))
                     last_pos = mouse_position
@@ -471,7 +491,12 @@ rectangleButton = button((255,0,255),650,500,120,70,"Rectangle")
 captureButton = button((255,0,255),650,600,120,70,"Save")
 insertButton = button((255,0,255),650, 600,120,70, "Insert")
 freeLineButton = button((255,165,165),650,10,20,10,"freeline")
-freeLineCloseButton = button((0, 255, 0), 658, 74, 30, 30, bezier_image)
+freeLineCloseButton = button((255, 0, 0), 658, 74, 30, 30, close_image)
+layerButton = button((255,165,165),650,10,20,10, off_image)
+dropperButton = button((255,165,165),650,10,20,10, dropper_image)
+undoButton = button((255,165,165), 700,10,20,10, undo_image)
+saveFileButton = button((255,165,165),650,10,20,10, save_image)
+loadFileButton = button((255,165,165),650,10,20,10, load_image)
 
 
 buttonCheck = -1
@@ -479,6 +504,50 @@ buttonCheck = -1
 drawing = False
 last_pos = None
 w = 1
+
+def background(x, y, layer, picture):
+    if layer == 1:
+        screen.blit(picture, (x, y))
+
+def pickColor():
+
+    print("picking a color!")
+
+    pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, 150, 30))
+
+    font = pygame.font.Font("freesansbold.ttf", 15)
+    curveText = font.render("Pick a Color", True, BLACK)
+    screen.blit(curveText, (5, 5))
+
+    pygame.display.update()
+    color = (255, 255, 255)
+    r = 0
+    g = 0
+    b = 0
+    while count < 1:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+
+                # Get mouse position
+                x, y = pyautogui.position()
+
+                # Get Color
+                r = pyautogui.pixel(x, y)[0]
+                g = pyautogui.pixel(x, y)[1]
+                b = pyautogui.pixel(x, y)[2]
+                color = [r, g, b]
+                print(color)
+                pygame.draw.rect(screen, color, pygame.Rect(700, 90, 50, 50))
+                pygame.display.update()
+                # set the color block to what the mouse is over
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                slider.setValue(r)
+                slider_1.setValue(g)
+                slider_2.setValue(b)
+
+                return color
+
 
 
 def game_loop():
@@ -492,6 +561,8 @@ def game_loop():
     pY_direction = 0
     arrayForPoints = []
     current_color = (0, 0, 0)
+    picker_color = (0, 0, 0)
+    layer = 1
 
 
     m = [[-1, 3, -3, 1],
@@ -515,16 +586,20 @@ def game_loop():
     eclipseButton = button((255, 165, 165), 690, 10, 30, 30, elipse_image)
     circleButton = button((160, 150, 255), 722, 10, 30, 30, circle_image)
     triangleButton = button((255, 255, 0), 754, 10, 30, 30, triangle_image)
-    captureButton = button((255, 0, 0), 658, 10, 30, 30, save_image)
+    captureButton = button((0, 0, 255), 658, 10, 30, 30, save_image)
+    dropperButton = button((255, 255, 255), 660, 100, 30, 30, dropper_image)
+    undoButton = button((255, 255, 255), 760, 100, 30, 30, undo_image)
     #second
     lineButton = button((255, 165, 0), 690, 42, 30, 30, line_image)
     bezierButton = button((0, 255, 0), 722, 42, 30, 30, bezier_image)
     rectangleButton = button((255, 0, 255), 754, 42, 30, 30, rectangle_image)
-    freeLineButton = button((0, 255, 0), 658, 42, 30, 30, bezier_image)
-    freeLineCloseButton = button((0, 255, 0), 658, 54, 30, 30, bezier_image)
+    freeLineButton = button((0, 255, 200), 658, 42, 30, 30, freedraw_image)
+    layerButton = button((150,23,79), 710, 310, 30, 30, off_image)
 
 
     insertButton = button((190,53,109), 675, 270, 100, 30, "Insert")
+    saveFileButton = button((255, 165, 165), 680, 350, 40, 40, save_image)
+    loadFileButton = button((255, 165, 165), 730, 350, 40, 40, load_image)
     image = pygame.image.load('Insert.png')
 
 
@@ -538,6 +613,11 @@ def game_loop():
         captureButton.draw(screen, (0, 0, 0))
         insertButton.draw(screen, (0, 0, 0))
         freeLineButton.draw(screen, (0, 0, 0))
+        layerButton.draw(screen, (0, 0, 0))
+        dropperButton.draw(screen, (0, 0, 0))
+        undoButton.draw(screen, (0,0,0))
+        saveFileButton.draw(screen, (0, 0, 0))
+        loadFileButton.draw(screen, (0, 0, 0))
 
 
         for event in pygame.event.get():
@@ -549,6 +629,7 @@ def game_loop():
                 if lineButton.isOver(pos):
                     buttonCheck = 1
                     arrayForPoints.append(drawLine(current_color))
+
                 elif bezierButton.isOver(pos):
                     buttonCheck = 2
                     arrayForPoints.append(DrawBezier(current_color))
@@ -573,6 +654,24 @@ def game_loop():
                 elif insertButton.isOver(pos):
                     buttonCheck = 8
                     insertLayer()
+                elif layerButton.isOver(pos):
+                    buttonCheck = 10
+                    if layer == 0:
+                        layer = 1
+                    else:
+                        layer = 0
+                elif dropperButton.isOver(pos):
+                    picker_color = pickColor()
+                elif undoButton.isOver(pos):
+                    if (len(arrayForPoints) > 0):
+                        arrayForPoints.pop()
+                elif saveFileButton.isOver(pos):
+                    print("hitting save file button")
+                    # save the python project
+                    saveloadmanager.save_data(arrayForPoints, "arrayForPoints")
+                elif loadFileButton.isOver(pos):
+                    print("hitting load button")
+                    arrayForPoints = saveloadmanager.load_data("arrayForPoints")
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 pressed = 1
@@ -610,6 +709,7 @@ def game_loop():
                 file_extension = os.path.splitext(event.file)[1]
                 if file_extension in [".bmp", ".jpg", ".png", ".PNG"]:
                     image = pygame.image.load(event.file)  # load the image given the file name.
+                    image = pygame.transform.scale(image, (500, 500))
                     print(event.file)
 
 
@@ -617,7 +717,7 @@ def game_loop():
         pY_change = pY_change + pY_direction
         screen.fill(white)
 
-        screen.blit(image, (50, 50))
+        background(50, 50, layer, image)
         eclipseButton.draw(screen, (0, 0, 0))
         lineButton.draw(screen, (0, 0, 0))
         bezierButton.draw(screen, (0, 0, 0))
@@ -627,6 +727,11 @@ def game_loop():
         captureButton.draw(screen, (0, 0, 0))
         insertButton.draw(screen, (0,0,0))
         freeLineButton.draw(screen, (0, 0, 0))
+        layerButton.draw(screen, (0, 0, 0))
+        dropperButton.draw(screen, (0, 0, 0))
+        undoButton.draw(screen, (0, 0, 0))
+        saveFileButton.draw(screen, (0, 0, 0))
+        loadFileButton.draw(screen, (0, 0, 0))
 
         if scale + scale_change > 1:
             scale = scale + scale_change
@@ -761,7 +866,7 @@ def game_loop():
 
         current_color = (slider.getValue(), slider_1.getValue(), slider_2.getValue())
 
-        pygame.draw.rect(screen,current_color, pygame.Rect(700, 90, 50, 50))
+        pygame.draw.rect(screen, current_color, pygame.Rect(700, 90, 50, 50))
 
         pygame.display.update()
 
